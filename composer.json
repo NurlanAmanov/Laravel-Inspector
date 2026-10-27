@@ -1,0 +1,37 @@
+{
+    "name": "nurlan/laravel-inspector",
+    "description": "Laravel üçün developer inspector: Blade görünüşləri, onlara ötürülən dəyişənlər və Route → Controller → Service → Model axınını səhifənin üzərində göstərir.",
+    "type": "library",
+    "keywords": ["laravel", "debug", "inspector", "blade", "devtools"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nurlan",
+            "email": "softlinkaz@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/view": "^10.0|^11.0|^12.0",
+        "illuminate/http": "^10.0|^11.0|^12.0",
+        "illuminate/routing": "^10.0|^11.0|^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nurlan\\LaravelInspector\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Nurlan\\LaravelInspector\\InspectorServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

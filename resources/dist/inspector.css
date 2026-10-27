@@ -1,0 +1,332 @@
+#lvi-root,
+#lvi-root * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+#lvi-root {
+    --lvi-bg: #0f1115;
+    --lvi-bg-2: #171a21;
+    --lvi-bg-3: #1f232c;
+    --lvi-line: #2b3038;
+    --lvi-text: #e6e9ef;
+    --lvi-muted: #8b93a1;
+    --lvi-accent: #7dd3fc;
+    --lvi-controller: #f0abfc;
+    --lvi-service: #fcd34d;
+    --lvi-model: #86efac;
+    --lvi-view: #7dd3fc;
+    --lvi-warn: #fca5a5;
+
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    pointer-events: none;
+    color: var(--lvi-text);
+}
+
+#lvi-root button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+/* ---------- Badge ---------- */
+
+.lvi-badge {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--lvi-bg);
+    border: 1px solid var(--lvi-line);
+    border-radius: 999px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 45%);
+    pointer-events: auto;
+}
+
+.lvi-badge:hover {
+    border-color: var(--lvi-accent);
+}
+
+.lvi-badge b {
+    color: var(--lvi-accent);
+    font-weight: 600;
+}
+
+.lvi-badge span {
+    color: var(--lvi-muted);
+}
+
+/* ---------- Panel ---------- */
+
+.lvi-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    flex-direction: column;
+    width: min(480px, 100vw);
+    background: var(--lvi-bg);
+    border-left: 1px solid var(--lvi-line);
+    box-shadow: -12px 0 32px rgb(0 0 0 / 40%);
+    pointer-events: auto;
+}
+
+#lvi-root.lvi-open .lvi-panel {
+    display: flex;
+}
+
+#lvi-root.lvi-open .lvi-badge {
+    display: none;
+}
+
+.lvi-head {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--lvi-line);
+}
+
+.lvi-head strong {
+    margin-right: auto;
+    color: var(--lvi-accent);
+    font-weight: 600;
+}
+
+.lvi-btn {
+    padding: 4px 8px;
+    color: var(--lvi-muted);
+    background: var(--lvi-bg-2);
+    border: 1px solid var(--lvi-line);
+    border-radius: 6px;
+}
+
+.lvi-btn:hover {
+    color: var(--lvi-text);
+}
+
+.lvi-btn.lvi-on {
+    color: var(--lvi-bg);
+    background: var(--lvi-accent);
+    border-color: var(--lvi-accent);
+}
+
+.lvi-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--lvi-line);
+}
+
+.lvi-tab {
+    padding: 8px 12px;
+    color: var(--lvi-muted);
+    border-bottom: 2px solid transparent;
+}
+
+.lvi-tab.lvi-on {
+    color: var(--lvi-text);
+    border-bottom-color: var(--lvi-accent);
+}
+
+.lvi-body {
+    flex: 1;
+    overflow: auto;
+    padding: 10px 12px 40px;
+}
+
+.lvi-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.lvi-body::-webkit-scrollbar-thumb {
+    background: var(--lvi-line);
+    border-radius: 8px;
+}
+
+/* ---------- Ağac / kartlar ---------- */
+
+.lvi-node {
+    margin-bottom: 6px;
+    background: var(--lvi-bg-2);
+    border: 1px solid var(--lvi-line);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.lvi-node-head {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    width: 100%;
+    padding: 8px 10px;
+    text-align: left;
+}
+
+.lvi-node-head:hover {
+    background: var(--lvi-bg-3);
+}
+
+.lvi-node-head .lvi-name {
+    color: var(--lvi-view);
+}
+
+.lvi-node-head .lvi-count {
+    margin-left: auto;
+    color: var(--lvi-muted);
+    white-space: nowrap;
+}
+
+.lvi-node-body {
+    display: none;
+    padding: 4px 10px 10px;
+    border-top: 1px solid var(--lvi-line);
+}
+
+.lvi-node.lvi-open > .lvi-node-body {
+    display: block;
+}
+
+.lvi-sub {
+    margin: 8px 0 4px;
+    color: var(--lvi-muted);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: .08em;
+}
+
+.lvi-kids {
+    margin-left: 14px;
+    padding-left: 8px;
+    border-left: 1px dashed var(--lvi-line);
+}
+
+/* ---------- Dəyişən sətirləri ---------- */
+
+.lvi-var {
+    display: flex;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px dotted var(--lvi-line);
+    overflow-wrap: anywhere;
+}
+
+.lvi-var:last-child {
+    border-bottom: 0;
+}
+
+.lvi-var .lvi-k {
+    flex: 0 0 34%;
+    color: var(--lvi-model);
+}
+
+.lvi-var .lvi-v {
+    flex: 1;
+    color: var(--lvi-text);
+}
+
+.lvi-var .lvi-m {
+    display: block;
+    color: var(--lvi-muted);
+}
+
+.lvi-var.lvi-shared .lvi-k {
+    color: var(--lvi-muted);
+}
+
+.lvi-tag {
+    display: inline-block;
+    padding: 0 5px;
+    color: var(--lvi-bg);
+    background: var(--lvi-muted);
+    border-radius: 4px;
+    font-size: 10px;
+}
+
+.lvi-tag.controller { background: var(--lvi-controller); }
+.lvi-tag.service,
+.lvi-tag.action,
+.lvi-tag.repository { background: var(--lvi-service); }
+.lvi-tag.model { background: var(--lvi-model); }
+.lvi-tag.view { background: var(--lvi-view); }
+.lvi-tag.route { background: #c4b5fd; }
+
+/* ---------- Axın ---------- */
+
+.lvi-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.lvi-step {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    padding: 6px 0;
+}
+
+.lvi-step + .lvi-step {
+    border-top: 1px solid var(--lvi-line);
+}
+
+.lvi-link {
+    color: var(--lvi-accent);
+    text-decoration: none;
+    border-bottom: 1px dotted currentcolor;
+}
+
+.lvi-mut {
+    color: var(--lvi-muted);
+}
+
+.lvi-sql {
+    display: block;
+    padding: 6px 8px;
+    color: var(--lvi-text);
+    background: var(--lvi-bg-3);
+    border-radius: 6px;
+    overflow-wrap: anywhere;
+}
+
+.lvi-slow .lvi-sql {
+    border-left: 2px solid var(--lvi-warn);
+}
+
+/* ---------- Highlight ---------- */
+
+.lvi-hl {
+    position: absolute;
+    display: none;
+    border: 1px solid var(--lvi-accent);
+    background: rgb(125 211 252 / 12%);
+    pointer-events: none;
+}
+
+.lvi-tip {
+    position: absolute;
+    display: none;
+    max-width: 380px;
+    padding: 6px 8px;
+    background: var(--lvi-bg);
+    border: 1px solid var(--lvi-accent);
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgb(0 0 0 / 50%);
+    pointer-events: none;
+}
+
+.lvi-tip .lvi-tip-name {
+    color: var(--lvi-view);
+}
