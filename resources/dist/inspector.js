@@ -17,9 +17,20 @@
     var byId = {};
     views.forEach(function (v) { byId[v.id] = v; });
 
+    var host = document.createElement('div');
+    host.id = 'lvi-root';
+    host.style.cssText = 'all:initial;position:fixed;inset:0;z-index:2147483000;pointer-events:none;';
+    document.body.appendChild(host);
+
+    var shadow = host.attachShadow({ mode: 'open' });
+    var sheet = document.createElement('style');
+    var cssNode = document.getElementById('lvi-style');
+    sheet.textContent = cssNode ? cssNode.textContent : '';
+    shadow.appendChild(sheet);
+
     var root = document.createElement('div');
-    root.id = 'lvi-root';
-    document.body.appendChild(root);
+    root.className = 'lvi-layer';
+    shadow.appendChild(root);
 
     function el(tag, cls, text) {
         var node = document.createElement(tag);
@@ -112,40 +123,93 @@
         return null;
     }
 
+    var hlParent = el('div', 'lvi-hl-parent');
     var hl = el('div', 'lvi-hl');
+    var hlLabel = el('div', 'lvi-hl-label');
     var tip = el('div', 'lvi-tip');
+    root.appendChild(hlParent);
     root.appendChild(hl);
+    root.appendChild(hlLabel);
     root.appendChild(tip);
+
+    function setBox(box, r) {
+        box.style.display = 'block';
+        box.style.left = r.left + 'px';
+        box.style.top = r.top + 'px';
+        box.style.width = r.width + 'px';
+        box.style.height = r.height + 'px';
+    }
+
+    // Görünüşün öz elementinin ən yaxın fərqli görünüş sərhədini tapır (valideyn view-un qutusu).
+    function enclosingNode(node, id) {
+        var p = node.parentElement;
+        while (p && p !== document.body) {
+            var pid = elementView.get(p);
+            if (pid && pid !== id) return p;
+            p = p.parentElement;
+        }
+        return null;
+    }
+
+    // Kökdən bu view-a qədər olan görünüş zənciri: layouts.app › pages.home › …
+    function crumbOf(view) {
+        var names = [];
+        var cur = view;
+        var guard = 0;
+        while (cur && guard++ < 50) {
+            names.unshift(cur.path || cur.name);
+            cur = cur.created_in ? byId[cur.created_in] : null;
+        }
+        return names.slice(0, -1);
+    }
 
     function showHighlight(node, view) {
         var r = node.getBoundingClientRect();
         if (!r.width && !r.height) return hideHighlight();
 
-        hl.style.display = 'block';
-        hl.style.left = r.left + 'px';
-        hl.style.top = r.top + 'px';
-        hl.style.width = r.width + 'px';
-        hl.style.height = r.height + 'px';
+        setBox(hl, r);
 
-        if (!view) return;
+        if (!view) {
+            hlParent.style.display = 'none';
+            hlLabel.style.display = 'none';
+            tip.style.display = 'none';
+            return;
+        }
+
+        var enclosing = enclosingNode(node, view.id);
+        if (enclosing) setBox(hlParent, enclosing.getBoundingClientRect());
+        else hlParent.style.display = 'none';
+
+        hlLabel.textContent = view.path || view.name;
+        hlLabel.style.display = 'block';
+        hlLabel.style.left = r.left + 'px';
+        hlLabel.style.top = (r.top < 18 ? r.top : r.top - 18) + 'px';
 
         tip.textContent = '';
-        tip.appendChild(el('div', 'lvi-tip-name', view.path || view.name));
+
+        var crumb = crumbOf(view);
+        if (crumb.length) {
+            tip.appendChild(el('span', 'lvi-crumb', crumb.join(' › ')));
+        }
 
         var origin = (view.chain || [])[0];
         if (origin) {
-            var line = el('div', 'lvi-mut');
-            line.appendChild(el('span', 'lvi-tag ' + origin.kind, origin.kind));
-            line.appendChild(document.createTextNode(' ' + origin.label + ' · ' + basename(origin.file) + ':' + origin.line));
-            tip.appendChild(line);
+            var row = el('div', 'lvi-row');
+            row.appendChild(el('span', 'lvi-tag ' + origin.kind, origin.kind));
+            row.appendChild(el('span', 'lvi-mut', origin.label + ' · ' + basename(origin.file) + ':' + origin.line));
+            tip.appendChild(row);
         }
 
         var names = (view.data || []).filter(function (d) { return !d.shared; })
             .map(function (d) { return '$' + d.name; });
 
         if (names.length) {
-            tip.appendChild(el('div', 'lvi-mut', names.slice(0, 8).join(', ')
+            tip.appendChild(el('span', 'lvi-vars', names.slice(0, 8).join(', ')
                 + (names.length > 8 ? ' +' + (names.length - 8) : '')));
+        }
+
+        if (inspecting) {
+            tip.appendChild(el('span', 'lvi-hint', 'Klik → panelda aç'));
         }
 
         tip.style.display = 'block';
@@ -156,6 +220,8 @@
 
     function hideHighlight() {
         hl.style.display = 'none';
+        hlParent.style.display = 'none';
+        hlLabel.style.display = 'none';
         tip.style.display = 'none';
     }
 
@@ -208,6 +274,7 @@
     badge.appendChild(el('span', null,
         (data.stats.views || 0) + ' view · ' + (data.stats.queries || 0) + ' sorğu'
     ));
+    badge.appendChild(el('kbd', null, 'Alt+I'));
     badge.addEventListener('click', function () { open(true); });
     root.appendChild(badge);
 

@@ -112,8 +112,10 @@ class InjectInspector
         $css = @file_get_contents($assets . '/inspector.css') ?: '';
         $js = @file_get_contents($assets . '/inspector.js') ?: '';
 
+        // CSS səhifəyə <style> kimi yox, data blokunda gedir: JS onu Shadow DOM-a köçürür,
+        // beləliklə site stilləri overlay-ə, overlay CSS-i isə sayta təsir etmir.
         return '<!--lvi:overlay-->'
-            . '<style id="lvi-style">' . $css . '</style>'
+            . '<script type="text/css" id="lvi-style">' . $css . '</script>'
             . '<script type="application/json" id="lvi-payload">' . $payload . '</script>'
             . '<script id="lvi-script">' . $js . '</script>';
     }
