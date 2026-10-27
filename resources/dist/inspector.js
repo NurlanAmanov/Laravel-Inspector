@@ -208,9 +208,7 @@
                 + (names.length > 8 ? ' +' + (names.length - 8) : '')));
         }
 
-        if (inspecting) {
-            tip.appendChild(el('span', 'lvi-hint', 'Klik → element detalı'));
-        }
+        tip.appendChild(el('span', 'lvi-hint', 'Klik → element detalı'));
 
         tip.style.display = 'block';
         var top = r.top - tip.offsetHeight - 6;
@@ -237,7 +235,7 @@
     var picked = null;
 
     function onClick(event) {
-        if (!inspecting) return;
+        if (!inspecting && !event.altKey) return;
         var id = viewOf(event.target);
         if (!id) return;
         event.preventDefault();
