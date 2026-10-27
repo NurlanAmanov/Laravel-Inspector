@@ -60,12 +60,12 @@ php artisan view:clear
 
 ### B) Git repozitoriyadan (komanda / başqa kompüterlər)
 
-Paketi GitHub-a yüklədikdən sonra, **real ünvanı** yazaraq:
+Layihənin `composer.json`-una:
 
 ```json
 {
     "repositories": [
-        { "type": "vcs", "url": "https://github.com/ISTIFADECI-ADI/laravel-inspector" }
+        { "type": "vcs", "url": "https://github.com/NurlanAmanov/Laravel-Inspector.git" }
     ]
 }
 ```
@@ -74,6 +74,8 @@ Paketi GitHub-a yüklədikdən sonra, **real ünvanı** yazaraq:
 composer require nurlan/laravel-inspector --dev
 php artisan view:clear
 ```
+
+Son dəyişiklikləri (teqlənməmiş) istəyirsənsə: `composer require nurlan/laravel-inspector:dev-main --dev`.
 
 ### C) Packagist-dən (hər kəs üçün)
 
