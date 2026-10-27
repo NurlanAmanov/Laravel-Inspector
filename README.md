@@ -43,6 +43,27 @@ php artisan view:clear
 
 Nothing else is needed — the ServiceProvider and the injection into the `web` middleware group are registered automatically via package discovery.
 
+### Updating
+
+**Released version (Packagist or GitHub tag):**
+
+```bash
+composer update nurlan/laravel-inspector
+php artisan view:clear
+```
+
+If Composer keeps an old copy, clear its cache first: `composer clear-cache`, then run the update again.
+
+**Local development (package in a sibling folder, symlinked):** once set up (see the local folder variant below), changes to the package are picked up immediately. After each change, only clear the view cache:
+
+```bash
+php artisan view:clear
+```
+
+Then reload the page with a hard refresh (`Ctrl+F5`). If `vendor/nurlan/laravel-inspector` is a copy instead of a symlink (this can happen on Windows), run `composer update nurlan/laravel-inspector` after each change.
+
+> Constraints like `"nurlan/laravel-inspector": "^1.0"` only see tagged releases, so commits pushed to `main` are not picked up until a new tag is published (for example `git tag v1.0.2 && git push origin v1.0.2`).
+
 <details>
 <summary>Variants without Packagist (fork, private repo, local development)</summary>
 
