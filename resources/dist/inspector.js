@@ -478,7 +478,9 @@
             if (meta.length) value.appendChild(el('span', 'lvi-m', meta.join(' · ')));
 
             if (v.attributes && v.attributes.length) {
-                value.appendChild(el('span', 'lvi-m', 'sütunlar: ' + v.attributes.join(', ')));
+                var cols = v.attributes.slice(0, 8).join(', ');
+                if (v.attributes.length > 8) cols += ' +' + (v.attributes.length - 8);
+                value.appendChild(el('span', 'lvi-m', 'sütunlar: ' + cols));
             }
 
             if (v.children && v.children.length) {
