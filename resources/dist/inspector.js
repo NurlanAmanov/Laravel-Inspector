@@ -260,6 +260,7 @@
     function setInspecting(on) {
         inspecting = on;
         inspectBtn.classList.toggle('lvi-on', on);
+        badgePick.classList.toggle('lvi-on', on);
         document.documentElement.style.cursor = on ? 'crosshair' : '';
         if (!on) hideHighlight();
     }
@@ -280,13 +281,22 @@
         }
     });
 
-    var badge = el('button', 'lvi-badge');
-    badge.appendChild(el('b', null, '⚡ Inspector'));
-    badge.appendChild(el('span', null,
+    var badge = el('div', 'lvi-badge');
+
+    var badgeOpen = el('button', 'lvi-badge-open');
+    badgeOpen.appendChild(el('b', null, '⚡ Inspector'));
+    badgeOpen.appendChild(el('span', null,
         (data.stats.views || 0) + ' view · ' + (data.stats.queries || 0) + ' sorğu'
     ));
-    badge.appendChild(el('kbd', null, 'Alt+I'));
-    badge.addEventListener('click', function () { open(true); });
+    badgeOpen.addEventListener('click', function () { open(true); });
+    badge.appendChild(badgeOpen);
+
+    var badgePick = el('button', 'lvi-badge-pick', 'Seç');
+    badgePick.title = 'Inspect (Alt+I)';
+    badgePick.appendChild(el('kbd', null, 'Alt+I'));
+    badgePick.addEventListener('click', function () { setInspecting(!inspecting); });
+    badge.appendChild(badgePick);
+
     root.appendChild(badge);
 
     var panel = el('div', 'lvi-panel');
@@ -530,7 +540,7 @@
     function renderElement(target) {
         if (!picked) {
             target.appendChild(el('div', 'lvi-mut',
-                'Element seçmək üçün Inspect (Alt+I) düyməsinə basın, sonra səhifədə elementə klikləyin.'));
+                'Element seçmək üçün overlay-də "Seç" (və ya Alt+I) basın, sonra səhifədə elementə klikləyin.'));
             return;
         }
 

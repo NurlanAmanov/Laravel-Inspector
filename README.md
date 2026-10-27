@@ -1,51 +1,52 @@
 # Laravel Inspector
 
-Blade/MVC Laravel layihələri üçün **developer inspector**. Səhifənin üzərində açılan overlay-dir (Vue DevTools-un komponent inspektoru kimi, amma backend üçün): hansı Blade görünüşünün hansı elementi çap etdiyini, ona hansı dəyişənlərin ötürüldüyünü və o dəyişənlərin hansı Controller → Service → Model axınından gəldiyini göstərir.
+A **developer inspector** for Blade/MVC Laravel projects. It is an overlay on top of the page (like the Vue DevTools component inspector, but for the backend): it shows which Blade view rendered each element, which variables were passed to that view, and which Controller → Service → Model flow those variables came from.
 
-**Versiya:** 1.0.1
+**Version:** 1.0.1
 
-## Uyğunluq
+## Compatibility
 
-| | Dəstəklənir |
+| | Supported |
 | --- | --- |
 | **Laravel** | 10.x · 11.x · 12.x · 13.x |
 | **PHP** | 8.1, 8.2, 8.3, 8.4 |
-| **Mühit** | yalnız `local`, `testing`, `development` + `APP_DEBUG=true` |
-| **Stack** | Blade / MVC (klassik `view()` + `@include` + `@extends`) |
+| **Environment** | only `local`, `testing`, `development` + `APP_DEBUG=true` |
+| **Stack** | Blade / MVC (classic `view()` + `@include` + `@extends`) |
 
-Blade marker-ləri `Blade::prepareStringsForCompilationUsing()` hook-undan istifadə edir (Laravel 9.26+). Daha köhnə versiyada paket çökmür — sadəcə DOM ↔ view xəritəsi (hover ilə element seçmə) işləməz, qalan hər şey işləyir.
+Blade markers use the `Blade::prepareStringsForCompilationUsing()` hook (Laravel 9.26+). On older versions the package does not crash — only the DOM ↔ view mapping (selecting elements by hovering) does not work; everything else still does.
 
-Panelin aşağısında hər zaman cari versiyalar göstərilir: `Inspector v1.0.1 · Laravel 13.31.0 · PHP 8.3.16`.
+The bottom of the panel always shows the current versions: `Inspector v1.0.1 · Laravel 13.31.0 · PHP 8.3.16`.
 
-> Prod-da ServiceProvider heç bir hadisə dinləmir və Blade kompilyasiyasına toxunmur.
+> In production the ServiceProvider does not listen to any events and does not touch Blade compilation.
 
 ---
 
-## Nə göstərir
+## What it shows
 
-| Tab | Məzmun |
+| Tab | Content |
 | --- | --- |
-| **Görünüşlər** | Render olunan bütün Blade faylları ağac şəklində (`@extends`/`@include` iyerarxiyası ilə). Hər biri üçün dəyişənlər 4 qrupa bölünür: **Controller-dən ötürülən**, **Controller datası** (parent view-dan miras), **Parent view scope-u** (loop/local qalıqları), **Paylaşılan/qlobal**. Hər dəyişən üçün tip, Eloquent modeli, sətir sayı, cədvəl adı və yüklənmiş relation-lar. |
-| **Axın** | `Route → Controller → Service/Action → View` — hər addım üçün fayl:sətir və editor-da açan link. |
-| **SQL** | Request ərzindəki sorğular, icra vaxtı, ləng sorğuların işarələnməsi və hər sorğunun tətbiq daxilindəki çağırış yeri. |
+| **Element** | The element you clicked: its tag/id/class and text, the controller that produced it, the request flow, the view hierarchy it lives in, and the variables passed to that view. |
+| **Views** | All rendered Blade files as a tree (following the `@extends`/`@include` hierarchy). For each view, variables are grouped into 4 sets: **passed from the controller**, **controller data** (inherited from the parent view), **parent view scope** (loop/local leftovers), and **shared/global**. For each variable: type, Eloquent model, row count, table name and loaded relations. |
+| **Flow** | `Route → Controller → Service/Action → View` — for each step the file:line and a link that opens it in your editor. |
+| **SQL** | Queries executed during the request, their run time, slow queries highlighted, and the application call site of each query. |
 
-**Inspect rejimi** (`Alt+I`, və ya sadəcə `Alt` basıb kursoru gəzdirmək): səhifədəki elementin üzərinə gələndə onu çərçivəyə alır və hansı Blade faylından gəldiyini tooltip-də göstərir. Elementə klik — panel həmin view-un üzərinə atlayır.
+**Inspect mode**: click the **Seç** (Select) button on the badge, or press `Alt+I`, or simply hold `Alt` and move the cursor. While it is active, hovering an element outlines it and the tooltip shows the Blade file it came from. Clicking an element opens the **Element** tab for it and turns inspect mode off. Press `Esc` to leave inspect mode.
 
 ---
 
-## Quraşdırma
+## Installation
 
 ```bash
 composer require nurlan/laravel-inspector --dev
 php artisan view:clear
 ```
 
-Başqa heç nə lazım deyil — ServiceProvider və `web` middleware qrupuna inject auto-discovery ilə özü qeyd olunur.
+Nothing else is needed — the ServiceProvider and the injection into the `web` middleware group are registered automatically via package discovery.
 
 <details>
-<summary>Packagist-siz variantlar (fork, özəl repo, lokal inkişaf)</summary>
+<summary>Variants without Packagist (fork, private repo, local development)</summary>
 
-**Birbaşa GitHub-dan.** Layihənin `composer.json`-una:
+**Directly from GitHub.** Add this to your project's `composer.json`:
 
 ```json
 {
@@ -59,7 +60,7 @@ Başqa heç nə lazım deyil — ServiceProvider və `web` middleware qrupuna in
 composer require nurlan/laravel-inspector:dev-main --dev
 ```
 
-**Lokal qovluqdan (yalnız paketin özü üzərində işləyəndə).** Yol layihədən paketə **nisbi** yazılmalıdır — mütləq yol başqa kompüterdə işləməyəcək:
+**From a local folder (only when you are working on the package itself).** The path from the project to the package must be **relative** — an absolute path will not work on another computer:
 
 ```json
 {
@@ -77,24 +78,22 @@ composer require nurlan/laravel-inspector:dev-main --dev
 composer require nurlan/laravel-inspector:*@dev --dev
 ```
 
-`@dev` burada vacibdir: path repozitoriyası versiyanı branch adından götürür (`dev-main`), bu isə `minimum-stability: stable` ilə uyğun gəlmir. `symlink: true` sayəsində paketdə etdiyin dəyişiklik dərhal layihədə görünür.
+`@dev` is required here: the path repository takes the version from the branch name (`dev-main`), which does not match `minimum-stability: stable`. With `symlink: true`, changes you make in the package appear in the project immediately.
 
 </details>
 
-### Tez-tez rastlanan xətalar
+### Common errors
 
-| Xəta | Səbəb və həlli |
+| Error | Cause and fix |
 | --- | --- |
-| `Could not find a matching version of package nurlan/laravel-inspector` | Paket adı səhvdir, yaxud `repositories` bloku ilə quraşdırırsan və versiya `minimum-stability`-ə uyğun gəlmir. VCS üçün `:dev-main`, path üçün `:*@dev` yaz. |
-| `https://api.github.com/repos/<istifadeci>/... 404` | `repositories`-də nümunə ünvan qalıb. Real GitHub ünvanını yaz. |
-| Overlay görünmür | `APP_ENV=local` və `APP_DEBUG=true` olmalıdır; cavab HTML olmalı və `</body>` teqi olmalıdır. |
-| Hover işləmir, panel boşdur | `php artisan view:clear` çağır — marker-lər kompilyasiya mərhələsində əlavə olunur. |
+| `Could not find a matching version of package nurlan/laravel-inspector` | Wrong package name, or you are installing through a `repositories` block and the version does not match `minimum-stability`. Use `:dev-main` for VCS and `:*@dev` for a path repository. |
+| `https://api.github.com/repos/<user>/... 404` | The example address is still in `repositories`. Replace it with the real GitHub address. |
+| The overlay does not appear | `APP_ENV=local` and `APP_DEBUG=true` must be set; the response must be HTML and contain a `</body>` tag. |
+| Hover does not work, the panel is empty | Run `php artisan view:clear` — the markers are added at compile time. |
 
-**Mühüm:** quraşdırmadan və paketi söndürüb-yandırmaqdan sonra bir dəfə `php artisan view:clear`.
+**Important:** after installing, and after disabling/re-enabling the package, run `php artisan view:clear` once.
 
-ServiceProvider və `web` middleware qrupuna inject auto-discovery ilə özü qeyd olunur, əlavə konfiqurasiya lazım deyil.
-
-### Konfiqurasiya (istəyə bağlı)
+### Configuration (optional)
 
 ```bash
 php artisan vendor:publish --tag=inspector-config
@@ -107,49 +106,49 @@ INSPECTOR_EDITOR=vscode      # vscode | phpstorm | sublime
 
 ---
 
-## Necə işləyir
+## How it works
 
-1. **`creating:` hadisəsi** — `view()` çağırıldığı ANDA işə düşür (render zamanı deyil). Həmin anda PHP stack-də Controller və aradakı Service sinifləri hələ də dayanır, buna görə `Origin::chain()` real axını çıxara bilir.
-2. **Parent view təyini** — kompilyasiya olunmuş view faylının sonundaki `/**PATH ... ENDPATH**/` qeydindən oxunur. Marker stack-i yerinə bu üsul seçildi, çünki `@extends` ilə layout child view-un marker-lərindən sonra render olunur.
-3. **Blade marker-ləri** — `Blade::prepareStringsForCompilationUsing()` ilə hər `.blade.php` faylının çıxışı `<!--lvi:s:ID-->` … `<!--lvi:e:ID-->` arasına alınır. `ID` view-a `$__lvi_id` kimi paylanır.
-4. **Middleware** — cavab HTML-dirsə, `</body>`-dən əvvəl JSON payload + CSS + JS inject olunur.
-5. **Overlay** — `TreeWalker` ilə şərhləri oxuyub DOM elementi → view xəritəsi qurur.
+1. **`creating:` event** — fires at the moment `view()` is called (not at render time). At that moment the Controller and the Service classes in between are still on the PHP stack, so `Origin::chain()` can capture the real flow.
+2. **Parent view detection** — read from the `/**PATH ... ENDPATH**/` note at the end of the compiled view file. This method was chosen over a marker stack because with `@extends` the layout is rendered after the child view's markers.
+3. **Blade markers** — with `Blade::prepareStringsForCompilationUsing()`, the output of every `.blade.php` file is wrapped in `<!--lvi:s:ID-->` … `<!--lvi:e:ID-->`. `ID` is passed to the view as `$__lvi_id`.
+4. **Middleware** — if the response is HTML, the JSON payload + CSS + JS are injected before `</body>`. The CSS and JS are isolated in a Shadow DOM, so the site's own styles do not affect the overlay and the overlay does not affect the site.
+5. **Overlay** — reads the comments with a `TreeWalker` and builds a map of DOM element → view.
 
-Marker-lər runtime-da `Inspector::marking()` ilə yoxlanır — cache-lənmiş compiled view inspector söndürüləndə tamamilə zərərsizdir.
+Markers are checked at runtime with `Inspector::marking()` — a cached compiled view is completely harmless when the inspector is disabled.
 
 ---
 
-## Struktur
+## Structure
 
 ```
 src/
-  Inspector.php                      request ərzindəki mərkəzi anbar + marker emitter
-  InspectorServiceProvider.php       Blade hook, middleware, event listener-lər
+  Inspector.php                      central store for the request + marker emitter
+  InspectorServiceProvider.php       Blade hook, middleware, event listeners
   Collectors/
-    ViewDataCollector.php            view + dəyişənlər + mənbə zənciri
-    RouteCollector.php               route → controller (fayl:sətir)
-    QueryCollector.php               SQL + çağırış yeri
+    ViewDataCollector.php            view + variables + origin chain
+    RouteCollector.php               route → controller (file:line)
+    QueryCollector.php               SQL + call site
   Support/
-    ValueInspector.php               dəyəri qısa, JSON-a yararlı xülasəyə çevirir
-    Origin.php                       backtrace-dən tətbiqin öz kadrlarını çıxarır
+    ValueInspector.php               turns a value into a short, JSON-friendly summary
+    Origin.php                       extracts the application's own frames from the backtrace
   Http/Middleware/InjectInspector.php
 resources/dist/
   inspector.css
-  inspector.js                       overlay (asılılıqsız vanilla JS)
+  inspector.js                       overlay (dependency-free vanilla JS, in Shadow DOM)
 config/inspector.php
 ```
 
 ---
 
-## Məlum məhdudiyyətlər
+## Known limitations
 
-- `@extends` istifadə edən səhifədə `@section` məzmunu DOM-da layout-un diapazonuna düşür, ona görə hover həmin blokda layout faylını göstərir (panel ağacında iyerarxiya düzgündür).
-- Blade `@include`/`@extends` kompilyasiyada `get_defined_vars()` ötürür, yəni child view parent-in bütün render scope-unu alır. Paket bunları ayrı qrupda göstərir, amma hansının məhz `@include(..., [...])` ilə verildiyini PHP səviyyəsində ayırd etmək mümkün deyil.
+- On a page using `@extends`, the `@section` content falls into the layout's range in the DOM, so hovering that block shows the layout file (the hierarchy in the tree is still correct).
+- Blade's `@include`/`@extends` pass `get_defined_vars()` during compilation, so a child view receives the parent's entire render scope. The package shows these in a separate group, but it cannot tell at the PHP level which variables were passed explicitly with `@include(..., [...])`.
 
-## Növbəti addımlar
+## Next steps
 
-- `@foreach` döngüsünün hansı dəyişən üzərində gəzdiyini ayrıca göstərmək.
-- Blade içindəki `<vue-component :prop="...">` teqlərini tapıb props → backend dəyişəni əlaqəsi.
-- API/JSON cavablara debug meta (ayrı SPA üçün).
-- N+1 sorğu aşkarlanması.
-- Inertia `::render()` props-ları üçün ayrı tab.
+- Show which variable a `@foreach` loop iterates over.
+- Find `<vue-component :prop="...">` tags in Blade and link props → backend variables.
+- Debug meta for API/JSON responses (for separate SPAs).
+- N+1 query detection.
+- A separate tab for Inertia `::render()` props.

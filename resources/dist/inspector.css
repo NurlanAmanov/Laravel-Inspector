@@ -77,6 +77,30 @@ button {
     color: var(--lvi-muted);
 }
 
+.lvi-badge-open {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.lvi-badge-pick {
+    padding: 3px 8px;
+    color: var(--lvi-muted);
+    background: var(--lvi-bg-3);
+    border: 1px solid var(--lvi-line);
+    border-radius: 999px;
+}
+
+.lvi-badge-pick:hover {
+    color: var(--lvi-text);
+}
+
+.lvi-badge-pick.lvi-on {
+    color: var(--lvi-bg);
+    background: var(--lvi-accent);
+    border-color: var(--lvi-accent);
+}
+
 .lvi-badge kbd {
     padding: 1px 5px;
     color: var(--lvi-muted);
@@ -84,6 +108,12 @@ button {
     border: 1px solid var(--lvi-line);
     border-radius: 4px;
     font-size: 10px;
+}
+
+.lvi-badge-pick.lvi-on kbd {
+    color: var(--lvi-bg);
+    background: transparent;
+    border-color: currentcolor;
 }
 
 /* ---------- Panel ---------- */
@@ -148,9 +178,16 @@ button {
 }
 
 .lvi-tab {
-    padding: 8px 12px;
+    flex: 1 1 auto;
+    padding: 9px 10px;
     color: var(--lvi-muted);
+    text-align: center;
+    white-space: nowrap;
     border-bottom: 2px solid transparent;
+}
+
+.lvi-tab:hover {
+    color: var(--lvi-text);
 }
 
 .lvi-tab.lvi-on {
@@ -236,10 +273,11 @@ button {
 }
 
 .lvi-sub {
-    margin: 8px 0 4px;
+    margin: 14px 0 6px;
     color: var(--lvi-muted);
     text-transform: uppercase;
     font-size: 10px;
+    font-weight: 600;
     letter-spacing: .08em;
 }
 
@@ -253,8 +291,9 @@ button {
 
 .lvi-var {
     display: flex;
-    gap: 8px;
-    padding: 4px 0;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 6px 0;
     border-bottom: 1px dotted var(--lvi-line);
     overflow-wrap: anywhere;
 }
@@ -275,7 +314,9 @@ button {
 
 .lvi-var .lvi-m {
     display: block;
+    margin-top: 2px;
     color: var(--lvi-muted);
+    font-size: 11px;
 }
 
 .lvi-var.lvi-shared .lvi-k {
