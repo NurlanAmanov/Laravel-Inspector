@@ -8,39 +8,44 @@ class Origin
 {
     public static function chain(int $limit = 6): array
     {
-        $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 40);
+        $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 60);
         $base = str_replace('\\', '/', base_path());
+        $count = count($frames);
         $out = [];
 
-        foreach ($frames as $frame) {
-            if (empty($frame['file'])) {
+        for ($i = 0; $i < $count; $i++) {
+            $file = str_replace('\\', '/', $frames[$i]['file'] ?? '');
+
+            if ($file === '' || ! str_starts_with($file, $base)) {
                 continue;
             }
 
-            $file = str_replace('\\', '/', $frame['file']);
-
-            if (! str_starts_with($file, $base)) {
+            if (str_contains($file, '/vendor/') || str_contains($file, '/storage/framework/views/')) {
                 continue;
             }
 
-            if (str_contains($file, '/vendor/') || str_contains($file, '/laravel-inspector/')) {
-                continue;
-            }
+            $caller = $frames[$i + 1] ?? null;
+            $class = $caller['class'] ?? null;
+            $function = $caller['function'] ?? ($frames[$i]['function'] ?? '');
+            $inRoutes = str_contains($file, '/routes/');
 
-            if (str_contains($file, '/storage/framework/views/')) {
-                continue;
-            }
+            if ($class !== null && static::isFramework($class)) {
+                if (! $inRoutes) {
+                    continue;
+                }
 
-            $class = $frame['class'] ?? null;
+                $class = null;
+                $function = 'Closure';
+            }
 
             $out[] = [
-                'file' => Inspector::relativePath($frame['file']),
-                'line' => (int) ($frame['line'] ?? 0),
+                'file' => Inspector::relativePath($frames[$i]['file']),
+                'line' => (int) ($frames[$i]['line'] ?? 0),
                 'class' => $class,
-                'function' => $frame['function'] ?? '',
+                'function' => $function,
                 'label' => $class
-                    ? class_basename($class) . '::' . ($frame['function'] ?? '')
-                    : ($frame['function'] ?? ''),
+                    ? class_basename($class) . '::' . $function . '()'
+                    : ($function !== '' ? $function . '()' : basename($file)),
                 'kind' => static::kind($class, $file),
             ];
 
@@ -50,6 +55,17 @@ class Origin
         }
 
         return $out;
+    }
+
+    public static function isFramework(string $class): bool
+    {
+        foreach (['Illuminate\\', 'Symfony\\', 'Laravel\\', 'Livewire\\', 'Filament\\'] as $prefix) {
+            if (str_starts_with($class, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function kind(?string $class, string $file): string

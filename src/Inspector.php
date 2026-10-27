@@ -4,6 +4,8 @@ namespace Nurlan\LaravelInspector;
 
 class Inspector
 {
+    public const VERSION = '1.0.0';
+
     protected static bool $marking = false;
 
     protected static array $views = [];
@@ -92,6 +94,16 @@ class Inspector
         return $id ? '<!--lvi:e:' . $id . '-->' : '';
     }
 
+    public static function currentView(): ?string
+    {
+        return end(static::$stack) ?: null;
+    }
+
+    public static function viewRecord(string $id): ?array
+    {
+        return static::$views[$id] ?? null;
+    }
+
     public static function setRequest(array $data): void
     {
         static::$request = $data;
@@ -126,6 +138,12 @@ class Inspector
             ],
             'editor' => config('inspector.editor'),
             'base_path' => str_replace('\\', '/', base_path()),
+            'versions' => [
+                'inspector' => static::VERSION,
+                'laravel' => app()->version(),
+                'php' => PHP_VERSION,
+                'supports' => 'Laravel 10 – 13 · PHP 8.1+',
+            ],
         ];
     }
 
