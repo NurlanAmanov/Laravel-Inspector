@@ -4,18 +4,8 @@ namespace Nurlan\LaravelInspector\Support;
 
 use Nurlan\LaravelInspector\Inspector;
 
-/**
- * `view()` çağırıldığı andakı stack-dən tətbiqin öz kadrlarını çıxarır.
- *
- * Bu, Route → Controller → Service → Model axınının əsas mənbəyidir:
- * view() çağırışı anında stack-də Controller və aradakı Service sinifləri
- * olduğu kimi dayanır.
- */
 class Origin
 {
-    /**
-     * @return array<int, array{file:string,line:int,class:?string,function:string,kind:string}>
-     */
     public static function chain(int $limit = 6): array
     {
         $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 40);
@@ -33,7 +23,6 @@ class Origin
                 continue;
             }
 
-            // vendor/ və paketin öz faylları axın üçün səs-küydür.
             if (str_contains($file, '/vendor/') || str_contains($file, '/laravel-inspector/')) {
                 continue;
             }
@@ -63,9 +52,6 @@ class Origin
         return $out;
     }
 
-    /**
-     * Kadrın axındakı rolunu adlandırır — overlay bunu rəngləndirir.
-     */
     public static function kind(?string $class, string $file): string
     {
         $needle = $class ?: $file;

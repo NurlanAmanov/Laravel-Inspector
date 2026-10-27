@@ -55,10 +55,6 @@ class InspectorServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * Paket yalnız icazə verilən mühitlərdə işə düşür. Prod-da heç bir
-     * hadisə dinlənmir, Blade kompilyasiyasına toxunulmur.
-     */
     protected function inSupportedEnvironment(): bool
     {
         $environments = (array) config('inspector.only_environments', []);
@@ -74,20 +70,9 @@ class InspectorServiceProvider extends ServiceProvider
         $router->pushMiddlewareToGroup('web', InjectInspector::class);
     }
 
-    /**
-     * Hər Blade faylının çıxışını `<!--lvi:s:ID-->` … `<!--lvi:e:ID-->`
-     * şərhləri ilə əhatə edir. Overlay DOM-da bu şərhlərə görə hansı
-     * elementin hansı view-dan gəldiyini bilir.
-     *
-     * Marker-lər runtime-da `Inspector::marking()` ilə yoxlanır, yəni
-     * cache-lənmiş compiled view inspector söndürüləndə də zərərsizdir.
-     */
     protected function registerViewMarkers(): void
     {
         if (! method_exists(BladeCompiler::class, 'prepareStringsForCompilationUsing')) {
-            // Laravel 9.26-dan əvvəlki versiyalarda bu hook yoxdur —
-            // qalan özəlliklər (dəyişənlər, axın, sorğular) işləyir,
-            // yalnız DOM ↔ view xəritəsi olmur.
             return;
         }
 

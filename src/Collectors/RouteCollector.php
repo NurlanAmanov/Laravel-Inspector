@@ -2,6 +2,7 @@
 
 namespace Nurlan\LaravelInspector\Collectors;
 
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Nurlan\LaravelInspector\Inspector;
@@ -9,10 +10,6 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Throwable;
 
-/**
- * Route → Controller addımını toplayır: hansı route uyğun gəldi, hansı
- * controller metodu çağırıldı, o metod hansı faylın hansı sətrindədir.
- */
 class RouteCollector
 {
     public function collect(Request $request): void
@@ -42,16 +39,12 @@ class RouteCollector
         ];
     }
 
-    /**
-     * Controller metodunun real fayl/sətir mövqeyi — overlay-dən editor-da
-     * birbaşa açmaq üçün.
-     */
     protected function controller(Route $route): ?array
     {
         try {
             $action = $route->getAction('uses');
 
-            if ($action instanceof \Closure) {
+            if ($action instanceof Closure) {
                 $ref = new ReflectionFunction($action);
 
                 return [

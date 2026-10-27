@@ -6,10 +6,6 @@ use Illuminate\Database\Events\QueryExecuted;
 use Nurlan\LaravelInspector\Inspector;
 use Nurlan\LaravelInspector\Support\Origin;
 
-/**
- * SQL sorğuları + hər sorğunun tətbiq daxilindəki çağırış nöqtəsi.
- * "Bu data hansı Eloquent sorğusundan gəldi?" sualının cavabı.
- */
 class QueryCollector
 {
     public function handle(QueryExecuted $event): void

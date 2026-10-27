@@ -9,13 +9,6 @@ use Nurlan\LaravelInspector\Inspector;
 use Nurlan\LaravelInspector\Support\Origin;
 use Nurlan\LaravelInspector\Support\ValueInspector;
 
-/**
- * Hər render olunan view üçün: adı, faylı, ona ötürülən dəyişənlər və
- * həmin view-un hansı Controller/Service zəncirindən çağırıldığı.
- *
- * `creating:` hadisəsi `view()` çağırıldığı ANDA işə düşür (render zamanı
- * deyil) — buna görə stack-də Controller hələ də dayanır.
- */
 class ViewDataCollector
 {
     public function __construct(
@@ -51,13 +44,9 @@ class ViewDataCollector
             'chain' => Origin::chain(),
         ]);
 
-        // Render zamanı HTML marker-i bu qeydlə əlaqələndirmək üçün.
         $view->with('__lvi_id', $id);
     }
 
-    /**
-     * @return string[]
-     */
     protected function sharedKeys(): array
     {
         return method_exists($this->views, 'getShared')

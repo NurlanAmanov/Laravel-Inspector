@@ -7,18 +7,8 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
-/**
- * View-a ötürülən dəyəri JSON-a yararlı, qısa xülasəyə çevirir.
- *
- * Məqsəd dəyəri tam dump etmək deyil — dəyərin MƏNBƏYİNİ göstərməkdir:
- * hansı Eloquent modeli, neçə sətir, hansı əlaqələr yüklənib.
- */
 class ValueInspector
 {
-    /**
-     * @param  array<string, mixed>  $data
-     * @param  string[]  $sharedKeys  View factory-dən gələn paylaşılan açarlar
-     */
     public static function summarizeAll(array $data, array $sharedKeys = []): array
     {
         $hidden = (array) config('inspector.hidden_keys', []);

@@ -2,27 +2,16 @@
 
 namespace Nurlan\LaravelInspector;
 
-/**
- * Bir request ərzində toplanan bütün məlumatın mərkəzi anbarı.
- *
- * Statik saxlanılır, çünki Blade-in kompilyasiya olunmuş çıxışından
- * (openView/closeView) birbaşa çağırılır — orada container əlçatan deyil.
- */
 class Inspector
 {
-    /** Marker echo olunsun? Middleware request başında təyin edir. */
     protected static bool $marking = false;
 
-    /** @var array<string, array> id => view qeydi */
     protected static array $views = [];
 
-    /** @var string[] Render zamanı açıq olan view-ların stack-i */
     protected static array $stack = [];
 
-    /** @var array Request / route / controller məlumatı */
     protected static array $request = [];
 
-    /** @var array[] SQL sorğuları */
     protected static array $queries = [];
 
     protected static int $sequence = 0;
@@ -51,11 +40,6 @@ class Inspector
         static::$sequence = 0;
     }
 
-    /**
-     * `creating: *` hadisəsində view qeyd olunur və id qaytarılır.
-     * Bu id view-a `$__lvi_id` kimi paylanır ki, render zamanı
-     * HTML marker-i həmin qeydlə əlaqələndirə bilsin.
-     */
     public static function registerView(array $record): string
     {
         $id = 'v' . (++static::$sequence);
@@ -75,9 +59,6 @@ class Inspector
         return $id;
     }
 
-    /**
-     * Compile olunmuş Blade-in ilk sətri. HTML şərhi qaytarır.
-     */
     public static function openView(?string $id, string $path): string
     {
         if (! static::$marking) {
@@ -85,8 +66,6 @@ class Inspector
         }
 
         if ($id === null || ! isset(static::$views[$id])) {
-            // `creating` hadisəsi tutulmayıb (məs. Blade::render() ilə
-            // birbaşa string kompilyasiyası) — boş qeyd yaradırıq.
             $id = static::registerView([
                 'name' => $path,
                 'path' => $path,
@@ -129,9 +108,6 @@ class Inspector
         static::$queries[] = $query;
     }
 
-    /**
-     * Overlay-ə ötürülən tam JSON payload.
-     */
     public static function payload(): array
     {
         $views = array_values(array_filter(
@@ -153,9 +129,6 @@ class Inspector
         ];
     }
 
-    /**
-     * Mütləq yolu layihə kökünə nisbi formaya salır.
-     */
     public static function relativePath(string $path): string
     {
         $path = str_replace('\\', '/', $path);

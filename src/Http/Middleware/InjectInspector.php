@@ -10,10 +10,6 @@ use Nurlan\LaravelInspector\Inspector;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Request başında toplamağı aktiv edir, sonunda HTML cavaba overlay-i
- * (payload + css + js) `</body>`-dən əvvəl yerləşdirir.
- */
 class InjectInspector
 {
     public function __construct(
