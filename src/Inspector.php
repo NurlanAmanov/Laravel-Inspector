@@ -4,7 +4,7 @@ namespace Nurlan\LaravelInspector;
 
 class Inspector
 {
-    public const VERSION = '1.0.0';
+    public const VERSION = '1.0.1';
 
     protected static bool $marking = false;
 

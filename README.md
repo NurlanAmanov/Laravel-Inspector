@@ -2,7 +2,7 @@
 
 Blade/MVC Laravel layihələri üçün **developer inspector**. Səhifənin üzərində açılan overlay-dir (Vue DevTools-un komponent inspektoru kimi, amma backend üçün): hansı Blade görünüşünün hansı elementi çap etdiyini, ona hansı dəyişənlərin ötürüldüyünü və o dəyişənlərin hansı Controller → Service → Model axınından gəldiyini göstərir.
 
-**Versiya:** 1.0.0
+**Versiya:** 1.0.1
 
 ## Uyğunluq
 
@@ -15,7 +15,7 @@ Blade/MVC Laravel layihələri üçün **developer inspector**. Səhifənin üz�
 
 Blade marker-ləri `Blade::prepareStringsForCompilationUsing()` hook-undan istifadə edir (Laravel 9.26+). Daha köhnə versiyada paket çökmür — sadəcə DOM ↔ view xəritəsi (hover ilə element seçmə) işləməz, qalan hər şey işləyir.
 
-Panelin aşağısında hər zaman cari versiyalar göstərilir: `Inspector v1.0.0 · Laravel 13.31.0 · PHP 8.3.16`.
+Panelin aşağısında hər zaman cari versiyalar göstərilir: `Inspector v1.0.1 · Laravel 13.31.0 · PHP 8.3.16`.
 
 > Prod-da ServiceProvider heç bir hadisə dinləmir və Blade kompilyasiyasına toxunmur.
 
@@ -35,32 +35,17 @@ Panelin aşağısında hər zaman cari versiyalar göstərilir: `Inspector v1.0.
 
 ## Quraşdırma
 
-### A) Lokal qovluqdan (paket sənin kompüterindədir)
-
-Layihənin `composer.json`-una path repozitoriya əlavə et:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "path",
-            "url": "D:/laragon/www/Projects/Pluginlaravel",
-            "options": { "symlink": true }
-        }
-    ]
-}
-```
-
 ```bash
 composer require nurlan/laravel-inspector --dev
 php artisan view:clear
 ```
 
-`symlink: true` sayəsində paketdə etdiyin dəyişiklik dərhal layihədə görünür.
+Başqa heç nə lazım deyil — ServiceProvider və `web` middleware qrupuna inject auto-discovery ilə özü qeyd olunur.
 
-### B) Git repozitoriyadan (komanda / başqa kompüterlər)
+<details>
+<summary>Packagist-siz variantlar (fork, özəl repo, lokal inkişaf)</summary>
 
-Layihənin `composer.json`-una:
+**Birbaşa GitHub-dan.** Layihənin `composer.json`-una:
 
 ```json
 {
@@ -71,27 +56,37 @@ Layihənin `composer.json`-una:
 ```
 
 ```bash
-composer require nurlan/laravel-inspector --dev
-php artisan view:clear
+composer require nurlan/laravel-inspector:dev-main --dev
 ```
 
-Son dəyişiklikləri (teqlənməmiş) istəyirsənsə: `composer require nurlan/laravel-inspector:dev-main --dev`.
+**Lokal qovluqdan (yalnız paketin özü üzərində işləyəndə).** Yol layihədən paketə **nisbi** yazılmalıdır — mütləq yol başqa kompüterdə işləməyəcək:
 
-### C) Packagist-dən (hər kəs üçün)
-
-Paket [packagist.org](https://packagist.org)-da qeydiyyatdan keçdikdən sonra heç bir `repositories` bloku lazım deyil:
+```json
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../Pluginlaravel",
+            "options": { "symlink": true }
+        }
+    ]
+}
+```
 
 ```bash
-composer require nurlan/laravel-inspector --dev
-php artisan view:clear
+composer require nurlan/laravel-inspector:*@dev --dev
 ```
+
+`@dev` burada vacibdir: path repozitoriyası versiyanı branch adından götürür (`dev-main`), bu isə `minimum-stability: stable` ilə uyğun gəlmir. `symlink: true` sayəsində paketdə etdiyin dəyişiklik dərhal layihədə görünür.
+
+</details>
 
 ### Tez-tez rastlanan xətalar
 
 | Xəta | Səbəb və həlli |
 | --- | --- |
-| `Could not find a matching version of package nurlan/laravel-inspector` | Composer paketi Packagist-də axtarır, amma orada yoxdur. `repositories` bloku əlavə et (A və ya B variantı). |
-| `https://api.github.com/repos/<istifadeci>/laravel-inspector ... 404` | `repositories`-də nümunə ünvan (`<istifadeci>`) qalıb. Real GitHub ünvanı yaz, yoxsa path repozitoriyasına keç. |
+| `Could not find a matching version of package nurlan/laravel-inspector` | Paket adı səhvdir, yaxud `repositories` bloku ilə quraşdırırsan və versiya `minimum-stability`-ə uyğun gəlmir. VCS üçün `:dev-main`, path üçün `:*@dev` yaz. |
+| `https://api.github.com/repos/<istifadeci>/... 404` | `repositories`-də nümunə ünvan qalıb. Real GitHub ünvanını yaz. |
 | Overlay görünmür | `APP_ENV=local` və `APP_DEBUG=true` olmalıdır; cavab HTML olmalı və `</body>` teqi olmalıdır. |
 | Hover işləmir, panel boşdur | `php artisan view:clear` çağır — marker-lər kompilyasiya mərhələsində əlavə olunur. |
 
