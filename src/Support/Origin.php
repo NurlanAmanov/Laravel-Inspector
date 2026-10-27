@@ -6,6 +6,8 @@ use Nurlan\LaravelInspector\Inspector;
 
 class Origin
 {
+    protected static array $pathCache = [];
+
     public static function chain(int $limit = 6): array
     {
         $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 60);
@@ -55,6 +57,40 @@ class Origin
         }
 
         return $out;
+    }
+
+    public static function callerView(): ?string
+    {
+        foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 60) as $frame) {
+            $file = str_replace('\\', '/', $frame['file'] ?? '');
+
+            if ($file !== '' && str_contains($file, '/storage/framework/views/')) {
+                return static::bladePathOf($file);
+            }
+        }
+
+        return null;
+    }
+
+    protected static function bladePathOf(string $compiled): ?string
+    {
+        if (array_key_exists($compiled, static::$pathCache)) {
+            return static::$pathCache[$compiled];
+        }
+
+        $tail = '';
+
+        if (is_file($compiled) && ($handle = fopen($compiled, 'rb')) !== false) {
+            fseek($handle, max(0, (int) filesize($compiled) - 800));
+            $tail = (string) fread($handle, 800);
+            fclose($handle);
+        }
+
+        $path = preg_match('~/\*\*PATH (.+?) ENDPATH\*\*/~', $tail, $m)
+            ? Inspector::relativePath(trim($m[1]))
+            : null;
+
+        return static::$pathCache[$compiled] = $path;
     }
 
     public static function isFramework(string $class): bool

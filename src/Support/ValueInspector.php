@@ -9,34 +9,54 @@ use Illuminate\Support\Collection;
 
 class ValueInspector
 {
-    public static function summarizeAll(array $data, array $sharedKeys = []): array
-    {
-        $hidden = (array) config('inspector.hidden_keys', []);
+    public static function summarizeAll(
+        array $data,
+        array $sharedKeys = [],
+        array $inheritedKeys = [],
+        bool $nested = false
+    ): array {
+        $hidden = array_map('strtolower', (array) config('inspector.hidden_keys', []));
         $out = [];
 
         foreach ($data as $key => $value) {
-            if ($key === '__lvi_id' || $key === '__env' || $key === 'app') {
+            if (static::isInternal($key)) {
                 continue;
             }
 
-            if (in_array(strtolower($key), array_map('strtolower', $hidden), true)) {
-                $out[] = [
-                    'name' => $key,
+            $shared = in_array($key, $sharedKeys, true);
+            $inherited = ! $shared && in_array($key, $inheritedKeys, true);
+
+            $flags = [
+                'name' => $key,
+                'shared' => $shared,
+                'inherited' => $inherited,
+                'scope' => $nested && ! $shared && ! $inherited,
+            ];
+
+            if (in_array(strtolower($key), $hidden, true)) {
+                $out[] = $flags + [
                     'type' => 'hidden',
                     'summary' => '••• gizlədilib',
-                    'shared' => in_array($key, $sharedKeys, true),
                 ];
 
                 continue;
             }
 
-            $out[] = static::summarize($value) + [
-                'name' => $key,
-                'shared' => in_array($key, $sharedKeys, true),
-            ];
+            $out[] = static::summarize($value) + $flags;
         }
 
         return $out;
+    }
+
+    public static function isInternal(string $key): bool
+    {
+        $exact = [
+            '__lvi_id', '__env', '__data', '__path', 'app', 'obLevel',
+            'loop', '__currentLoopData', 'component', 'componentName',
+            'attributes', 'slot', '__laravel_slots',
+        ];
+
+        return in_array($key, $exact, true) || str_starts_with($key, '__empty_');
     }
 
     public static function summarize(mixed $value, int $depth = 0): array

@@ -228,6 +228,14 @@
     var body = el('div', 'lvi-body');
     panel.appendChild(tabsBar);
     panel.appendChild(body);
+
+    var v = data.versions || {};
+    var foot = el('div', 'lvi-foot');
+    foot.appendChild(el('span', null, 'Inspector v' + (v.inspector || '?')));
+    foot.appendChild(el('span', 'lvi-mut', 'Laravel ' + (v.laravel || '?') + ' · PHP ' + (v.php || '?')));
+    foot.appendChild(el('span', 'lvi-mut', v.supports || ''));
+    panel.appendChild(foot);
+
     root.appendChild(panel);
 
     var tabs = [
@@ -275,7 +283,8 @@
 
         var children = {};
         views.forEach(function (v) {
-            (children[v.parent || '#root'] || (children[v.parent || '#root'] = [])).push(v);
+            var key = v.created_in || v.parent || '#root';
+            (children[key] || (children[key] = [])).push(v);
         });
 
         (function branch(parentKey, container) {
@@ -285,7 +294,7 @@
 
                 var headRow = el('button', 'lvi-node-head');
                 headRow.appendChild(el('span', 'lvi-name', view.path || view.name));
-                var own = (view.data || []).filter(function (d) { return !d.shared; }).length;
+                var own = (view.data || []).filter(isOwn).length;
                 headRow.appendChild(el('span', 'lvi-count', own + ' dəyişən'));
                 headRow.addEventListener('click', function () {
                     node.classList.toggle('lvi-open');
@@ -300,6 +309,15 @@
                 var inner = el('div', 'lvi-node-body');
 
                 inner.appendChild(el('div', 'lvi-sub', 'Mənbə — bu view-u kim çağırdı'));
+
+                var parentView = view.created_in ? byId[view.created_in] : null;
+                if (parentView) {
+                    var pStep = el('div', 'lvi-step');
+                    pStep.appendChild(el('span', 'lvi-tag view', 'include'));
+                    pStep.appendChild(el('span', null, parentView.path || parentView.name));
+                    inner.appendChild(pStep);
+                }
+
                 inner.appendChild(renderChain(view.chain || []));
 
                 inner.appendChild(el('div', 'lvi-sub', 'Ötürülən dəyişənlər'));
@@ -315,17 +333,46 @@
         })('#root', target);
     }
 
+    function isOwn(v) {
+        return !v.shared && !v.inherited && !v.scope;
+    }
+
     function renderVars(vars) {
         var wrap = el('div');
-        var own = vars.filter(function (v) { return !v.shared; });
+        var own = vars.filter(isOwn);
+        var inherited = vars.filter(function (v) { return v.inherited; });
+        var scope = vars.filter(function (v) { return v.scope; });
         var shared = vars.filter(function (v) { return v.shared; });
 
-        if (!own.length) {
-            wrap.appendChild(el('div', 'lvi-mut', 'Controller-dən dəyişən ötürülməyib.'));
+        if (own.length) {
+            appendVarRows(wrap, own);
         }
 
-        own.concat(shared).forEach(function (v) {
-            var row = el('div', 'lvi-var' + (v.shared ? ' lvi-shared' : ''));
+        if (inherited.length) {
+            wrap.appendChild(el('div', 'lvi-sub', 'Controller datası (' + inherited.length + ')'));
+            appendVarRows(wrap, inherited);
+        }
+
+        if (scope.length) {
+            wrap.appendChild(el('div', 'lvi-sub', 'Parent view scope-u — loop/local (' + scope.length + ')'));
+            appendVarRows(wrap, scope);
+        }
+
+        if (shared.length) {
+            wrap.appendChild(el('div', 'lvi-sub', 'Paylaşılan / qlobal (' + shared.length + ')'));
+            appendVarRows(wrap, shared);
+        }
+
+        if (!own.length && !inherited.length && !scope.length) {
+            wrap.appendChild(el('div', 'lvi-mut', 'Dəyişən ötürülməyib.'));
+        }
+
+        return wrap;
+    }
+
+    function appendVarRows(wrap, vars) {
+        vars.forEach(function (v) {
+            var row = el('div', 'lvi-var' + (isOwn(v) ? '' : ' lvi-shared'));
             row.appendChild(el('span', 'lvi-k', '$' + v.name));
 
             var value = el('span', 'lvi-v');
@@ -354,8 +401,6 @@
             row.appendChild(value);
             wrap.appendChild(row);
         });
-
-        return wrap;
     }
 
     function renderChain(chain) {

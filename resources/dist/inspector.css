@@ -158,6 +158,25 @@
 
 /* ---------- Ağac / kartlar ---------- */
 
+.lvi-foot {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: baseline;
+    padding: 7px 12px;
+    background: var(--lvi-bg-2);
+    border-top: 1px solid var(--lvi-line);
+    font-size: 10px;
+}
+
+.lvi-foot > span:first-child {
+    color: var(--lvi-accent);
+}
+
+.lvi-foot .lvi-mut {
+    font-size: 10px;
+}
+
 .lvi-node {
     margin-bottom: 6px;
     background: var(--lvi-bg-2);

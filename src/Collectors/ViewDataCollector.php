@@ -37,14 +37,38 @@ class ViewDataCollector
             return;
         }
 
+        $data = $view->getData();
+        $shared = $this->sharedKeys();
+        $parentPath = Origin::callerView();
+        $parent = $parentPath === null ? null : Inspector::findViewByPath($parentPath);
+        $parentRecord = $parent === null ? null : Inspector::viewRecord($parent);
+
+        $controllerKeys = $parentRecord['controller_keys']
+            ?? $this->meaningfulKeys($data, $shared);
+
         $id = Inspector::registerView([
             'name' => $view->name(),
             'path' => Inspector::relativePath($path),
-            'data' => ValueInspector::summarizeAll($view->getData(), $this->sharedKeys()),
+            'data' => ValueInspector::summarizeAll(
+                $data,
+                $shared,
+                $parent === null ? [] : $controllerKeys,
+                $parent !== null
+            ),
+            'controller_keys' => $controllerKeys,
             'chain' => Origin::chain(),
+            'created_in' => $parent,
         ]);
 
         $view->with('__lvi_id', $id);
+    }
+
+    protected function meaningfulKeys(array $data, array $shared): array
+    {
+        return array_values(array_filter(
+            array_keys($data),
+            fn ($key) => ! ValueInspector::isInternal($key) && ! in_array($key, $shared, true)
+        ));
     }
 
     protected function sharedKeys(): array

@@ -51,7 +51,9 @@ class Inspector
             'name' => null,
             'path' => null,
             'data' => [],
+            'controller_keys' => [],
             'chain' => [],
+            'created_in' => null,
             'parent' => null,
             'rendered' => false,
         ];
@@ -99,6 +101,17 @@ class Inspector
         return end(static::$stack) ?: null;
     }
 
+    public static function findViewByPath(string $path): ?string
+    {
+        foreach (array_reverse(static::$views, true) as $id => $view) {
+            if (($view['path'] ?? null) === $path) {
+                return $id;
+            }
+        }
+
+        return null;
+    }
+
     public static function viewRecord(string $id): ?array
     {
         return static::$views[$id] ?? null;
@@ -122,9 +135,13 @@ class Inspector
 
     public static function payload(): array
     {
-        $views = array_values(array_filter(
-            static::$views,
-            fn ($v) => $v['rendered'] ?? false
+        $views = array_values(array_map(
+            function ($view) {
+                unset($view['controller_keys']);
+
+                return $view;
+            },
+            array_filter(static::$views, fn ($v) => $v['rendered'] ?? false)
         ));
 
         return [
