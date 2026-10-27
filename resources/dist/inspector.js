@@ -209,7 +209,7 @@
         }
 
         if (inspecting) {
-            tip.appendChild(el('span', 'lvi-hint', 'Klik → panelda aç'));
+            tip.appendChild(el('span', 'lvi-hint', 'Klik → element detalı'));
         }
 
         tip.style.display = 'block';
@@ -234,6 +234,8 @@
         showHighlight(event.target, byId[id]);
     }
 
+    var picked = null;
+
     function onClick(event) {
         if (!inspecting) return;
         var id = viewOf(event.target);
@@ -241,9 +243,20 @@
         event.preventDefault();
         event.stopPropagation();
         setInspecting(false);
+        picked = { id: id, info: describe(event.target) };
         open(true);
-        selectTab('views');
-        focusView(id);
+        selectTab('element');
+    }
+
+    function describe(node) {
+        var text = (node.textContent || '').replace(/\s+/g, ' ').trim();
+        var cls = typeof node.className === 'string' ? node.className.trim().split(/\s+/).slice(0, 4).join('.') : '';
+        return {
+            tag: node.tagName.toLowerCase(),
+            id: node.id || '',
+            cls: cls,
+            text: text.length > 90 ? text.slice(0, 90) + '…' : text
+        };
     }
 
     function setInspecting(on) {
@@ -306,7 +319,8 @@
     root.appendChild(panel);
 
     var tabs = [
-        { key: 'views', label: 'Görünüşlər (' + (data.stats.views || 0) + ')', render: renderViews },
+        { key: 'element', label: 'Element', render: renderElement },
+        { key: 'views', label:'Görünüşlər (' + (data.stats.views || 0) + ')', render: renderViews },
         { key: 'request', label: 'Axın', render: renderRequest },
         { key: 'queries', label: 'SQL (' + (data.stats.queries || 0) + ')', render: renderQueries }
     ];
@@ -489,6 +503,112 @@
         });
 
         return wrap;
+    }
+
+    // View-un zəncirində (özü və valideynləri) ilk controller frame-i.
+    function controllerOf(view) {
+        var cur = view;
+        var guard = 0;
+        while (cur && guard++ < 50) {
+            var frame = (cur.chain || []).filter(function (f) { return f.kind === 'controller'; })[0];
+            if (frame) return frame;
+            cur = cur.created_in ? byId[cur.created_in] : null;
+        }
+        return null;
+    }
+
+    // Kökdən bu view-a qədər olan view-lar (özü daxil deyil).
+    function ancestorsOf(view) {
+        var list = [];
+        var cur = view.created_in ? byId[view.created_in] : null;
+        var guard = 0;
+        while (cur && guard++ < 50) {
+            list.unshift(cur);
+            cur = cur.created_in ? byId[cur.created_in] : null;
+        }
+        return list;
+    }
+
+    function renderElement(target) {
+        if (!picked) {
+            target.appendChild(el('div', 'lvi-mut',
+                'Element seçmək üçün Inspect (Alt+I) düyməsinə basın, sonra səhifədə elementə klikləyin.'));
+            return;
+        }
+
+        var view = byId[picked.id];
+        var info = picked.info;
+        var req = data.request || {};
+
+        var head = el('div', 'lvi-node lvi-open');
+        var h = el('div', 'lvi-node-head');
+        h.appendChild(el('span', 'lvi-name', '<' + info.tag + (info.id ? '#' + info.id : '') + (info.cls ? '.' + info.cls : '') + '>'));
+        var goto = el('button', 'lvi-btn', 'Ağacda göstər');
+        goto.addEventListener('click', function () {
+            selectTab('views');
+            focusView(picked.id);
+        });
+        h.appendChild(goto);
+        head.appendChild(h);
+        var hBody = el('div', 'lvi-node-body');
+        if (info.text) hBody.appendChild(el('div', 'lvi-mut', '"' + info.text + '"'));
+        hBody.appendChild(el('div', 'lvi-mut', 'Görünüş: ' + (view.path || view.name)));
+        head.appendChild(hBody);
+        target.appendChild(head);
+
+        target.appendChild(el('div', 'lvi-sub', 'Controller'));
+        var frame = controllerOf(view);
+        var controllerStep = null;
+        if (frame) {
+            controllerStep = el('div', 'lvi-step');
+            controllerStep.appendChild(el('span', 'lvi-tag controller', 'controller'));
+            controllerStep.appendChild(el('span', null, frame.label || frame.function));
+            var cr = el('span', 'lvi-count');
+            cr.appendChild(fileLink(frame.file, frame.line));
+            controllerStep.appendChild(cr);
+        } else if (req.controller) {
+            controllerStep = el('div', 'lvi-step');
+            controllerStep.appendChild(el('span', 'lvi-tag controller', 'controller'));
+            controllerStep.appendChild(el('span', null, req.controller.label));
+            var rr = el('span', 'lvi-count');
+            rr.appendChild(fileLink(req.controller.file, req.controller.line));
+            controllerStep.appendChild(rr);
+        }
+        target.appendChild(controllerStep || el('div', 'lvi-mut', 'Controller tapılmadı (view controller-dən yox, başqa yerdən render olunub).'));
+
+        target.appendChild(el('div', 'lvi-sub', 'Necə gəlir'));
+        var flow = el('div', 'lvi-flow');
+        if (req.route) {
+            var rs = el('div', 'lvi-step');
+            rs.appendChild(el('span', 'lvi-tag route', 'route'));
+            rs.appendChild(el('span', null, req.route.name || req.route.uri));
+            flow.appendChild(rs);
+        }
+        target.appendChild(flow);
+        target.appendChild(renderChain(view.chain || []));
+
+        target.appendChild(el('div', 'lvi-sub', 'Harada (view zənciri)'));
+        var where = el('div', 'lvi-flow');
+        ancestorsOf(view).forEach(function (anc) {
+            var s = el('div', 'lvi-step');
+            s.appendChild(el('span', 'lvi-tag view', 'view'));
+            s.appendChild(el('span', null, anc.path || anc.name));
+            var sr = el('span', 'lvi-count');
+            sr.appendChild(fileLink(anc.path, 1));
+            s.appendChild(sr);
+            where.appendChild(s);
+        });
+        var self = el('div', 'lvi-step');
+        self.appendChild(el('span', 'lvi-tag view', 'view'));
+        self.appendChild(el('span', 'lvi-name', view.path || view.name));
+        var selfLink = el('span', 'lvi-count');
+        selfLink.appendChild(fileLink(view.path, 1));
+        self.appendChild(selfLink);
+        where.appendChild(self);
+        target.appendChild(where);
+
+        target.appendChild(el('div', 'lvi-sub', 'Bu view-a ötürülən dəyişənlər'));
+        target.appendChild(renderVars(view.data || []));
     }
 
     function focusView(id) {
