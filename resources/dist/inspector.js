@@ -1,10 +1,3 @@
-/**
- * Laravel Inspector — overlay.
- *
- * Backend `<!--lvi:s:ID-->` … `<!--lvi:e:ID-->` şərhləri ilə hər Blade
- * görünüşünün çıxışını işarələyir. Bu skript həmin şərhləri oxuyub
- * DOM elementi → view qeydi xəritəsi qurur.
- */
 (function () {
     'use strict';
 
@@ -27,8 +20,6 @@
     var root = document.createElement('div');
     root.id = 'lvi-root';
     document.body.appendChild(root);
-
-    // ---------------------------------------------------------------- utils
 
     function el(tag, cls, text) {
         var node = document.createElement(tag);
@@ -67,8 +58,6 @@
         return a;
     }
 
-    // ------------------------------------------------- DOM ↔ view xəritəsi
-
     var elementView = new WeakMap();
     var viewElements = {};
 
@@ -99,8 +88,6 @@
                 if (m[1] === 's') {
                     stack.push(m[2]);
                 } else {
-                    // Yalnız uyğun gələn id-ni çıxarırıq — qarışıq
-                    // yerləşmədə stack-in pozulmasının qarşısını alır.
                     var at = stack.lastIndexOf(m[2]);
                     if (at > -1) stack.splice(at, 1);
                 }
@@ -124,8 +111,6 @@
         }
         return null;
     }
-
-    // ------------------------------------------------------------ highlight
 
     var hl = el('div', 'lvi-hl');
     var tip = el('div', 'lvi-tip');
@@ -174,8 +159,6 @@
         tip.style.display = 'none';
     }
 
-    // ------------------------------------------------------- inspect rejimi
-
     var inspecting = false;
 
     function onMove(event) {
@@ -214,14 +197,11 @@
             if (inspecting) return setInspecting(false);
             open(false);
         }
-        // Alt + I — inspect rejimini çevirir.
         if (event.altKey && (event.key === 'i' || event.key === 'I')) {
             event.preventDefault();
             setInspecting(!inspecting);
         }
     });
-
-    // ----------------------------------------------------------------- badge
 
     var badge = el('button', 'lvi-badge');
     badge.appendChild(el('b', null, '⚡ Inspector'));
@@ -230,8 +210,6 @@
     ));
     badge.addEventListener('click', function () { open(true); });
     root.appendChild(badge);
-
-    // ----------------------------------------------------------------- panel
 
     var panel = el('div', 'lvi-panel');
     var head = el('div', 'lvi-head');
@@ -285,8 +263,6 @@
             setInspecting(false);
         }
     }
-
-    // ------------------------------------------------------- views renderer
 
     var nodeIndex = {};
 
@@ -410,8 +386,6 @@
         node.scrollIntoView({ block: 'center' });
     }
 
-    // ----------------------------------------------------- request renderer
-
     function renderRequest(target) {
         var req = data.request || {};
 
@@ -450,7 +424,6 @@
             flow.appendChild(c);
         }
 
-        // Hər view-un zəncirindəki unikal Service/Action addımları.
         var seen = {};
         views.forEach(function (v) {
             (v.chain || []).forEach(function (f) {
@@ -488,8 +461,6 @@
         card.appendChild(inner);
         target.appendChild(card);
     }
-
-    // ----------------------------------------------------- queries renderer
 
     function renderQueries(target) {
         var queries = data.queries || [];
